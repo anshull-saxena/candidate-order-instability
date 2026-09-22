@@ -44,3 +44,13 @@ hf_cache/
 
 # Temporary logs
 *.log
+
+# LaTeX build artifacts
+*.aux
+*.bbl
+*.blg
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+*.synctex.gz
