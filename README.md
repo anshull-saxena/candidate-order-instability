@@ -298,7 +298,7 @@ Reproduce all results in 4 commands:
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/candidate-order-instability/candidate-order-instability.git
+git clone https://github.com/anshull-saxena/candidate-order-instability.git
 cd candidate-order-instability
 
 # 2. Install dependencies & base engine
@@ -327,7 +327,7 @@ For detailed protocol specifications, see [`reproduction/README.md`](reproductio
   title={Candidate Order Instability in Non-Autoregressive Multi-Candidate Transformers},
   author={Senior ML Research Team},
   year={2026},
-  howpublished={\url{https://github.com/candidate-order-instability/candidate-order-instability}},
+  howpublished={\url{https://github.com/anshull-saxena/candidate-order-instability}},
   note={Preprint under preparation}
 }
 ```

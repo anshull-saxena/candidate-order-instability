@@ -31,7 +31,7 @@ The exact runtime configuration is logged in [`experiments/configs/experiment_ma
 
 ### Step 1: Clone Repository & Install Dependencies
 ```bash
-git clone https://github.com/candidate-order-instability/candidate-order-instability.git
+git clone https://github.com/anshull-saxena/candidate-order-instability.git
 cd candidate-order-instability
 pip install -r requirements.txt
 ```

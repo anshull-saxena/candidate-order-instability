@@ -16,7 +16,7 @@ This guide provides step-by-step instructions to reproduce all empirical finding
 
 ```bash
 # Clone this repository
-git clone https://github.com/candidate-order-instability/candidate-order-instability.git
+git clone https://github.com/anshull-saxena/candidate-order-instability.git
 cd candidate-order-instability
 
 # Install required statistical and ML dependencies
