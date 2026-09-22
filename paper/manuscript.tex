@@ -49,7 +49,7 @@ In classification, dialogue state tracking, intent routing, and tool selection, 
 f(q, \pi(\mathcal{C})) = f(q, \mathcal{C}).
 \end{equation}
 
-In practice, modern transformer-based classifiers often serialize choices into text. In autoregressive language models, choices are presented as prompt lists (e.g., ``Options: (A) ... (B) ...''), which have been repeatedly shown to induce recency or primacy biases \citep{guo2017calibration}. To achieve low-latency inference in agentic routing and intent classification, non-autoregressive multi-candidate transformers \citep{laya2024} evaluate all $K$ candidates simultaneously within a single bidirectional forward pass. In this architecture, candidate strings are concatenated into a single input sequence separated by candidate-specific marker tokens. The sequence is processed by a bidirectional encoder (e.g., RoBERTa; \citealp{liu2019roberta}), and per-candidate classification logits are extracted by projecting the contextualized marker embeddings through a linear head.
+In practice, modern transformer-based classifiers often serialize choices into text. In autoregressive language models, choices are presented as prompt lists (e.g., ``Options: (A) ... (B) ...''), which have been repeatedly shown to induce recency, primacy, and option-order biases \citep{liu2024lost, pezeshkpour2024large, zheng2024large}. To achieve low-latency inference in agentic routing and intent classification, non-autoregressive multi-candidate transformers \citep{laya2024} evaluate all $K$ candidates simultaneously within a single bidirectional forward pass. In this architecture, candidate strings are concatenated into a single input sequence separated by candidate-specific marker tokens. The sequence is processed by a bidirectional encoder (e.g., RoBERTa; \citealp{liu2019roberta}), and per-candidate classification logits are extracted by projecting the contextualized marker embeddings through a linear head.
 
 While computationally efficient ($O(1)$ forward passes with respect to $K$), serializing unordered choices into a 1D sequence injects artificial positional relationships. Because full bidirectional self-attention couples every token with all other tokens, the contextualized representation of candidate marker $M_k$ is influenced by its absolute position, its relative distance from query tokens, and the semantic identities of its immediate sequence neighbors.
 
@@ -66,24 +66,71 @@ To answer this question rigorously, we perform a controlled empirical study usin
 
 \section{Related Work}
 
-\paragraph{Order Sensitivity and Prompt Reordering in Transformers.}
-In-context learning with autoregressive language models exhibits well-documented sensitivity to prompt permutations, demonstration order, and option letter labeling. However, order sensitivity in non-autoregressive multi-candidate encoder architectures, where multiple choices are concatenated with structural delimiter markers in a bidirectional sequence, has received comparatively little formal evaluation.
-\textit{[TODO: Literature Search Required --- Expand survey on prompt perturbation sensitivity, option order biases, and positional exposure in language models]}.
+\subsection{Permutation-Invariant Learning on Sets}
+In mathematical formulations of set processing and classification, an input candidate set $\mathcal{X} = \{x_1, \dots, x_K\}$ constitutes an unordered collection of elements. A set function $f: 2^{\mathcal{X}} \to \mathbb{R}^d$ is defined as permutation-invariant if for any permutation $\pi \in \mathcal{S}_K$, $f(\pi(\mathcal{X})) = f(\mathcal{X})$, and permutation-equivariant if $f(\pi(\mathcal{X})) = \pi(f(\mathcal{X}))$.
 
-\paragraph{Permutation Invariance and Set-Valued Functions.}
-Foundational principles of permutation-invariant deep learning emphasize that set-valued inputs should be processed by architectures that are invariant by construction, such as pooling over independent instance projections. Concatenating unordered candidates into a transformer prompt deliberately sacrifices architectural permutation invariance for cross-candidate attentional context.
-\textit{[TODO: Literature Search Required --- Integrate citations on deep sets, set transformers, and permutation-equivariant attention architectures]}.
+Foundational principles of deep learning over sets established by \citet{zaheer2017deep} (Deep Sets) establish that any continuous permutation-invariant function acting on countable sets can be decomposed into the canonical form $\rho\left( \sum_{x \in \mathcal{X}} \phi(x) \right)$, where $\phi$ maps instances independently to a latent representation space and $\rho$ applies non-linear transformations subsequent to a symmetric pooling operator (e.g., sum, mean, or max). \citet{lee2019set} extended this framework to model higher-order pairwise and subset interactions using attention mechanisms via the Set Transformer, which employs multi-head attention without positional encodings (through Induced Set Attention Blocks and Pooling by Multihead Attention) to enforce strict permutation equivariance and invariance by construction.
 
-\paragraph{Positional Encodings and Sequence Position Bias.}
-Learned, sinusoidal, and rotary positional embeddings inject sequence position information into self-attention. When sequence length grows from $K=5$ (approx.\ 60 tokens) to $K=77$ (approx.\ 450 tokens), self-attention entropy redistributes across distant marker positions.
-\textit{[TODO: Literature Search Required --- Add literature on attentional dilution, positional embedding degradation in long sequences, and primacy/recency biases in transformer backbones]}.
+A fundamental distinction must be maintained between three paradigms: (i) a mathematical set function where inputs inherently lack sequential ordering, (ii) permutation-invariant architectures (e.g., Deep Sets and Set Transformer) that structurally enforce invariance by construction, and (iii) a sequence encoder that processes set elements through an ordered 1D serialization. The architecture evaluated in this work (\texttt{convaiinnovations/laya}; \citealp{laya2024}) belongs to the third paradigm. Rather than pooling independent instance projections, it serializes candidate elements into a single prompt string separated by delimiter markers. Consequently, the architecture trades architectural permutation invariance for cross-candidate self-attention context, inherently coupling candidate representations to sequential coordinates.
 
-\paragraph{Probability Calibration and Expected Calibration Error.}
-Probability calibration assesses whether predicted confidence scores match empirical accuracy frequencies \citep{guo2017calibration, naeini2015obtaining}. While modern transformers often produce overconfident uncalibrated posteriors, the interplay between candidate serialization permutations and confidence calibration remains an active research topic.
-\textit{[TODO: Literature Search Required --- Incorporate peer-reviewed survey on multiclass calibration, temperature scaling, and binned calibration metrics in multi-candidate selection]}.
+\subsection{Transformers and Positional Information}
+The standard transformer architecture \citep{vaswani2017attention} relies on Scaled Dot-Product Attention, which is fundamentally permutation-equivariant over unordered sets of input tokens in the absence of positional encodings. To enable transformers to parse the syntax and word order of natural language, sequence position information is deliberately introduced. In the original formulation \citep{vaswani2017attention}, sinusoidal positional embeddings were added to token embeddings, whereas modern pretrained bidirectional encoders such as BERT and RoBERTa \citep{liu2019roberta} employ learned absolute positional embeddings.
 
-\paragraph{Intent Classification Benchmarks.}
-Banking77 \citep{casanueva2020efficient} provides a domain-specific evaluation standard comprising 77 fine-grained customer service intent categories with high semantic overlap, providing an ideal testbed for multi-candidate discriminative models.
+Subsequent architectural developments introduced relative positional representations \citep{shaw2018self}, rotary position embeddings (RoPE; \citealp{su2024roformer}), and linear attention biases (ALiBi; \citealp{press2022alibi}), which condition attention scores directly on relative token displacements $|i - j|$ rather than absolute sequence indices. As systematically reviewed by \citet{dufter2022position}, positional representations fundamentally shape self-attention dynamics: they bias attention distributions toward local sequence neighborhoods, alter token representation geometry across successive layers, and cause self-attention entropy to redistribute as sequence length scales.
+
+This literature provides the core mechanistic motivation for our investigation: because positional encodings inject non-uniform spatial inductive biases, serializing unordered candidates into a 1D sequence inevitably exposes each candidate marker to position-dependent representational shifts. However, positional encoding literature alone does not establish or prove the presence of candidate-order instability in multi-candidate concatenation architectures; empirical evaluation is necessary to measure its real-world magnitude.
+
+\subsection{Order Sensitivity in Language Models}
+Order-dependent sensitivity has been widely documented in recent empirical studies of pretrained language models, spanning three distinct phenomena:
+\begin{enumerate}
+    \item \textbf{Few-shot prompt demonstration ordering:} \citet{lu2022fantastically} observed that the presentation order of in-context exemplars in few-shot prompts dramatically impacts autoregressive language model accuracy, causing performance to swing between random guessing and state-of-the-art across permutations of the exact same demonstration set. \citet{zhao2021calibrate} similarly identified substantial majority-label, recency, and common-token biases in prompt-based classification, introducing test-time affine calibration of output logits.
+    \item \textbf{Context ordering and positional bias:} In document retrieval and question answering over long sequences, \citet{liu2024lost} demonstrated the ``lost-in-the-middle'' phenomenon: language models retrieve information effectively when relevant context is placed at the extreme beginning or end of the input sequence, but experience severe performance degradation when relevant passages reside in the interior.
+    \item \textbf{Option order bias in multiple-choice selection:} When multiple-choice questions are presented to large language models with letter-labeled options (e.g., A, B, C, D), \citet{pezeshkpour2024large} and \citet{zheng2024large} demonstrated that models exhibit strong selection biases toward specific option positions or identifiers, frequently flipping their selected choice when options are permuted.
+\end{enumerate}
+
+To properly contextualize the present study, it is critical to distinguish these prior phenomena from the problem addressed here. We do not evaluate prompt demonstration ordering in few-shot in-context learning \citep{lu2022fantastically}, nor natural language token order in autoregressive generation, nor letter-associated choice options evaluated via next-token generation probabilities \citep{pezeshkpour2024large, zheng2024large}. Instead, our study focuses on candidate ordering in a non-autoregressive, encoder-based discriminative architecture: all $K$ candidates are concatenated into a single bidirectional sequence with delimiter markers, and classification logits are simultaneously extracted from marker embeddings via a shared linear head.
+
+\subsection{Intent Classification and Candidate Selection}
+Intent classification serves as a cornerstone task in conversational AI, dialogue state tracking, and agentic tool routing, where user queries must be matched against pre-defined intent categories. The Banking77 benchmark \citep{casanueva2020efficient} provides an authoritative, fine-grained evaluation suite comprising 13,083 customer service utterances spanning 77 intent classes. Its high semantic density and fine granularity---distinguishing between closely related categories such as \texttt{card\_arrival}, \texttt{card\_linking}, and \texttt{card\_delivery\_estimate}---provide a realistic, challenging testbed where distractors exhibit strong semantic overlap.
+
+Multi-candidate selection in conversational systems has traditionally relied on two architectural paradigms:
+\begin{itemize}
+    \item \textbf{Dual-encoders (Bi-encoders):} Queries and candidate labels are encoded into independent dense representations, and similarity is scored via dot-product or cosine distance \citep{casanueva2020efficient}. Dual-encoders are strictly permutation-invariant with respect to candidate presentation and achieve $O(1)$ query forward passes with pre-indexed candidates. However, they lack cross-attention between candidates and the query during encoding, limiting discriminative capacity.
+    \item \textbf{Cross-encoders:} The query and each candidate are concatenated into a single sequence (\texttt{[CLS] q [SEP] c [SEP]}) and processed with full cross-attention \citep{nogueira2019passage}. While cross-encoders achieve high accuracy by modeling fine-grained query-candidate interactions, scoring $K$ candidates requires $K$ separate forward passes ($O(K)$ complexity), creating prohibitive latency overheads in real-time agentic routing.
+    \item \textbf{Poly-encoders:} \citet{humeau2020polyencoders} bridge this trade-off by extracting multiple contextual query embeddings and attending over candidate encodings, but preserve separate candidate representations.
+\end{itemize}
+The non-autoregressive multi-candidate architecture (\texttt{convaiinnovations/laya}; \citealp{laya2024}) attempts to overcome the $O(K)$ computational barrier of cross-encoders while retaining cross-attention by packing all $K$ candidates into a single sequence separated by reserved delimiter tokens. This design achieves $O(1)$ forward passes with full bidirectional cross-candidate attention, but introduces sequence serialization order as an unmodelled confounding variable.
+
+\subsection{Calibration and Inference-Time Marginalization}
+\paragraph{Confidence Calibration.} In automated decision routing and tool invocation, predicted confidence scores govern critical control decisions: whether to execute an action autonomously, prompt the user for confirmation, or route to a human operator. A classifier is well-calibrated when predicted probabilities correspond to empirical accuracy: $\mathbb{P}(\hat{y} = y \mid \hat{p} = p) = p$ \citep{guo2017calibration}. Expected Calibration Error (ECE; \citealp{naeini2015obtaining, nixon2019measuring}) quantifies calibration mismatch by partitioning predictions into discrete confidence bins. Deep neural networks, particularly modern transformer architectures, are well known to produce poorly calibrated, overconfident posterior distributions \citep{guo2017calibration}. In this study, we measure whether candidate order permutation and ensemble marginalization affect empirical calibration, evaluating ECE through clustered bootstrap distributions.
+
+\paragraph{Ensembling and Test-Time Augmentation.} Aggregating predictions across perturbed inputs has deep roots in statistical learning and uncertainty estimation:
+\begin{itemize}
+    \item \textbf{Deep Ensembles:} \citet{lakshminarayanan2017simple} established that ensembling independently trained models significantly improves predictive accuracy and uncertainty calibration.
+    \item \textbf{Test-Time Augmentation (TTA):} In computer vision, applying stochastic data augmentations (e.g., cropping, scaling, rotation) at test time and averaging predictions provides effective marginalization over nuisance variations, reducing aleatoric uncertainty and boosting accuracy \citep{ayhan2018test, shanmugam2020when}.
+    \item \textbf{Reasoning Marginalization:} In language model reasoning, self-consistency \citep{wang2023selfconsistency} marginalizes over diverse reasoning paths sampled at inference time, demonstrating that averaging over stochastic generation paths yields substantial performance gains.
+\end{itemize}
+In our setting, random permutation marginalization operationalizes test-time augmentation for sequence serialization, treating candidate order $\pi \sim \mathcal{S}_K$ as a nuisance variable to be numerically integrated out. In parallel, we evaluate orthogonal cyclic permutation shifts as a structured, deterministic phase-shift heuristic designed to maximize positional dispersion across candidates at equal compute budget.
+
+\subsection{Positioning of the Present Study: Critical Gap Analysis}
+Synthesizing the prior literature reveals a fundamental research gap:
+\begin{enumerate}
+    \item \textbf{Permutation Invariance vs.\ Practical Concatenation:} Foundational set-function theory \citep{zaheer2017deep, lee2019set} establishes that unordered collections should ideally be processed permutation-invariantly. However, practical high-throughput routing architectures \citep{laya2024} concatenate candidates into a 1D sequence to leverage pretrained bidirectional representations.
+    \item \textbf{Positional Coupling:} Transformer literature \citep{vaswani2017attention, shaw2018self, su2024roformer, dufter2022position} shows that sequence positional mechanisms fundamentally shape contextual representations across layers.
+    \item \textbf{Prior Order Sensitivity Scope:} Prior order-sensitivity studies focused on prompt demonstration order in few-shot LLMs \citep{lu2022fantastically, zhao2021calibrate}, document context order in retrieval \citep{liu2024lost}, or option letter selection in multiple-choice QA \citep{pezeshkpour2024large, zheng2024large}.
+    \item \textbf{Benchmark Realism:} Intent-classification literature \citep{casanueva2020efficient} provides fine-grained, semantically dense candidate-selection tasks.
+    \item \textbf{The Unaddressed Setting:} None of these prior works investigated the behavior of an unordered candidate set serialized into a single bidirectional marker sequence where each candidate's score is read directly from its corresponding marker representation in a single forward pass.
+    \item \textbf{Controlled Empirical Characterization:} The present study provides the first systematic quantification of this setting, measuring:
+    \begin{itemize}
+        \item Fixed-candidate-set decision flip rates ($\mathrm{FR}_{\mathrm{top1}}$),
+        \item Cardinality scaling across $K \in \{5, 10, 20, 40, 77\}$,
+        \item Logit variance expansion ($7.5\times$),
+        \item The canonicalization fallacy via counterfactual reverse-order testing,
+        \item Inference-time random and cyclic permutation marginalization laws, and
+        \item Empirical confidence calibration (ECE) effects.
+    \end{itemize}
+    \item \textbf{Methodological Isolation:} By employing strictly nested candidate sets ($K_5 \subset K_{10} \subset K_{20} \subset K_{40} \subset K_{77}$) and query-clustered statistical inference ($N=120$), we cleanly isolate the effect of candidate cardinality from distractor composition. This controlled isolation and empirical evidence form the primary novelty of this work.
+\end{enumerate}
 
 \section{Problem Formulation and Model Architecture}
 
@@ -95,7 +142,7 @@ The model under evaluation (\texttt{convaiinnovations/laya}) implements a single
 \end{equation}
 where $\texttt{[M}_i\texttt{]}$ denotes a reserved structural marker token, and $\pi \in \mathcal{S}_K$ denotes a candidate permutation.
 
-The serialized sequence $\mathbf{x}(\pi)$ is processed by a bidirectional transformer encoder (RoBERTa backbone with Scaled Dot-Product Attention):
+The serialized sequence $\mathbf{x}(\pi)$ is processed by a bidirectional transformer encoder (RoBERTa backbone with Scaled Dot-Product Attention; \citealp{vaswani2017attention, liu2019roberta}):
 \begin{equation}
 \mathbf{H} = \text{Encoder}(\mathbf{x}(\pi)) \in \mathbb{R}^{T \times d}.
 \end{equation}
@@ -117,13 +164,13 @@ The predicted class is selected via argmax:
 In a standard cross-encoder or bi-encoder architecture, each candidate $c$ is evaluated either independently against $q$ or as an isolated pair $(q, c)$. In contrast, concatenating all $K$ candidates into $\mathbf{x}(\pi)$ exposes candidate representations to two coupling mechanisms:
 \begin{enumerate}
     \item \textbf{Direct Cross-Candidate Attention:} Every candidate token directly attends to tokens belonging to all other candidates in the bidirectional encoder.
-    \item \textbf{Positional Coordinate Disruption:} Changing the index $\pi(i)$ shifts the candidate's absolute token position in the sequence, altering its positional embedding vectors and self-attention dot-product geometry.
+    \item \textbf{Positional Coordinate Disruption:} Changing the index $\pi(i)$ shifts the candidate's absolute token position in the sequence, altering its positional embedding vectors and self-attention dot-product geometry \citep{dufter2022position}.
 \end{enumerate}
 
 \section{Experimental Setup}
 
 \subsection{Dataset and Query Population}
-We conduct all evaluations on the official test split of the Banking77 dataset \citep{casanueva2020efficient}, which contains 3,076 customer support queries across 77 fine-grained banking intent categories. To ensure representative coverage without cherry-picking, we stratify $N=120$ unique test queries across all 77 intent classes. Every query is assigned a permanent identifier ($q \in \{0, \dots, 119\}$). All methods and cardinalities are evaluated on this identical query population.
+We conduct all evaluations on the official test split of the Banking77 dataset \citep{casanueva2020efficient}, which comprises 13,083 customer support queries across 77 fine-grained banking intent categories (3,080 test examples). To ensure representative coverage without cherry-picking, we stratify $N=120$ unique test queries across all 77 intent classes. Every query is assigned a permanent identifier ($q \in \{0, \dots, 119\}$). All methods and cardinalities are evaluated on this identical query population.
 
 \subsection{Strictly Nested Candidate Protocol}
 To isolate the effect of candidate cardinality $K \in \{5, 10, 20, 40, 77\}$ from distractor sampling variance, we enforce a strict distractor nesting invariant. For each query $q$ with ground-truth label $y^*$:
@@ -147,7 +194,7 @@ We compare the following inference-time candidate presentation protocols:
     \item \textbf{B0\_Random:} $P=10$ independent uniform random permutations $\pi \sim \mathcal{S}_K$ per query.
     \item \textbf{B1\_Alpha (Canonical):} Candidates sorted alphabetically by label string ($A \to Z$).
     \item \textbf{B1\_ReverseAlpha (Counterfactual):} Candidates sorted in reverse alphabetical order ($Z \to A$).
-    \item \textbf{Rand\_Marg\_M (Random Marginalization):} Output probability vectors averaged over $M \in \{2, 3, 5\}$ independent random candidate permutations: $\bar{p}_M(c) = \frac{1}{M}\sum_{m=1}^M p(c; \pi_m)$.
+    \item \textbf{Rand\_Marg\_M (Random Marginalization):} Output probability vectors averaged over $M \in \{2, 3, 5\}$ independent random candidate permutations, drawing on principles of inference-time test-time augmentation \citep{ayhan2018test, shanmugam2020when}: $\bar{p}_M(c) = \frac{1}{M}\sum_{m=1}^M p(c; \pi_m)$.
     \item \textbf{B2\_Cyclic\_M (Orthogonal Cyclic Shifts):} Output probability vectors averaged over $M \in \{2, 3, 5\}$ deterministic cyclic phase shifts: $s_m = (m \cdot \lfloor K / M \rfloor) \pmod K$.
 \end{itemize}
 
@@ -179,7 +226,7 @@ To measure residual instability after marginalizing over $M$ permutations, we ev
 \end{equation}
 
 \paragraph{4. Expected Calibration Error (ECE).}
-Predictions are partitioned into $B=15$ equally spaced confidence bins $I_b = (\frac{b-1}{B}, \frac{b}{B}]$. Binned calibration error is calculated directly over the model's calibrated probability outputs \citep{guo2017calibration, naeini2015obtaining}:
+Predictions are partitioned into $B=15$ equally spaced confidence bins $I_b = (\frac{b-1}{B}, \frac{b}{B}]$. Binned calibration error is calculated directly over the model's calibrated probability outputs \citep{guo2017calibration, naeini2015obtaining, nixon2019measuring}:
 \begin{equation}
 \mathrm{ECE} = \sum_{b=1}^B \frac{|I_b|}{N} \left| \operatorname{acc}(I_b) - \operatorname{conf}(I_b) \right|.
 \end{equation}
@@ -192,7 +239,7 @@ The fraction of discordant candidate pairs between two ranking vectors over $K$ 
 
 \subsection{Statistical Protocol}
 \begin{itemize}
-    \item \textbf{Query-Level Clustered Bootstrap:} All 95\% confidence intervals are generated using $B=1,000$ query-level bootstrap resamples with replacement ($N=120$). For ECE, the full 15-bin formula is re-evaluated on each bootstrap sample to produce valid empirical percentiles.
+    \item \textbf{Query-Level Clustered Bootstrap:} All 95\% confidence intervals are generated using $B=1,000$ query-level bootstrap resamples with replacement ($N=120$) \citep{efron1993introduction}. For ECE, the full 15-bin formula is re-evaluated on each bootstrap sample to produce valid empirical percentiles.
     \item \textbf{Paired Hypothesis Tests:} Differences in top-1 accuracy between interventions and `B0\_Native' are evaluated using exact two-sided McNemar tests on discordant classification pairs \citep{mcnemar1947note}.
     \item \textbf{Multiple Testing Correction:} To guard against false positive discoveries across exploratory comparisons, we apply Benjamini-Hochberg False Discovery Rate (FDR) control at $q=0.05$ across all 45 pre-specified hypotheses ($5 \text{ cardinalities} \times 9 \text{ intervention methods}$) \citep{benjamini1995controlling}.
 \end{itemize}

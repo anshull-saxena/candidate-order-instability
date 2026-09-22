@@ -68,7 +68,13 @@ The manuscript is organized into 12 sections following empirical machine learnin
 
 1. **Abstract:** High-level summary of the research questions, strictly nested distractor protocol, key scaling findings, the canonicalization fallacy, inference-time marginalization, multiple-testing FDR control, and the negative replication result.
 2. **Introduction:** Mathematical formulation of permutation invariance for multi-candidate classification ($f(q, \pi(\mathcal{C})) = f(q, \mathcal{C})$), single-pass delimiter marker concatenation in bidirectional encoders, and explicit research questions.
-3. **Related Work:** Survey across prompt order sensitivity, permutation invariance and set functions, positional encoding biases, and calibration. Structured literature search roadmap for peer-reviewed citations.
+3. **Related Work:** Comprehensive literature survey across 6 structured subsections:
+   - 3.1 Permutation-Invariant Learning on Sets (Deep Sets, Set Transformer, set functions vs sequence encoders)
+   - 3.2 Transformers and Positional Information (Attention Is All You Need, relative/rotary positions, ALiBi, position surveys)
+   - 3.3 Order Sensitivity in Language Models (prompt demonstration order, context position/lost-in-the-middle, option order biases)
+   - 3.4 Intent Classification and Candidate Selection (Banking77 provenance, dual-encoders, cross-encoders, poly-encoders, multi-candidate concatenation)
+   - 3.5 Calibration and Inference-Time Marginalization (ECE, test-time augmentation, deep ensembles, self-consistency)
+   - 3.6 Positioning of the Present Study (7-point Critical Gap Analysis and primary novelty statement)
 4. **Problem Formulation and Model Architecture:** Precise token serialization equations, marker embedding projections, and self-attention coupling mechanisms in `convaiinnovations/laya`.
 5. **Experimental Setup:** Controlled distractor nesting protocol ($K_5 \subset K_{10} \subset K_{20} \subset K_{40} \subset K_{77}$), $N=120$ intent-stratified queries, 10 random permutations per query, 3 base candidate sequence replications at $K=77$, and full intervention suite (`B0_Native`, `B0_Random`, `B1_Alpha`, `B1_ReverseAlpha`, `Rand_Marg_M{2,3,5}`, `B2_Cyclic_M{2,3,5}`).
 6. **Metrics and Statistical Analysis:** Formal definitions of within-method pairwise argmax decision flip rate ($\mathrm{FR}_{\mathrm{top1}}$), counterfactual cross-canonical flip rate ($\mathrm{CrossCanonicalFlip}$), residual ensemble flip rate ($\mathrm{ResFlip}_M$), 15-bin Expected Calibration Error (ECE), normalized Kendall's rank distance ($\tau_{\mathrm{norm}}$), 1,000-sample query-level clustered bootstrap CIs, exact McNemar tests, and Benjamini-Hochberg FDR control ($q=0.05$).
@@ -99,31 +105,56 @@ The manuscript is organized into 12 sections following empirical machine learnin
 
 ---
 
-## 5. Literature TODO Roadmap
+## 5. Grounded Literature Inventory
 
-In accordance with empirical research rigor, citations for foundational and external literature are cataloged in `references.bib` with structured placeholders to be integrated during the final literature survey:
+All structured literature placeholders in `references.bib` have been replaced with 29 verified scholarly citations across 8 categories:
 
-1. **Permutation Invariance & Set Functions:**
-   - Deep Sets (Zaheer et al., NeurIPS 2017)
-   - Set Transformer (Lee et al., ICML 2019)
-2. **Order Sensitivity & Prompt Perturbation:**
-   - Prompt reordering in LLMs (Lu et al., ACL 2022; Zhao et al., ICML 2021)
-3. **Positional Encoding Effects & Primacy/Recency:**
-   - Lost-in-the-middle context position biases (Liu et al., TACL 2024)
-4. **Calibration in Ranking:**
-   - Multiclass calibration & ECE formulations (Guo et al., ICML 2017; Naeini et al., AAAI 2015; Nixon et al., CVPRW 2019)
-5. **Inference-Time Ensemble Marginalization:**
-   - Test-time augmentation (TTA) and Monte Carlo permutation averaging
-6. **Multi-Candidate Routing Benchmarks:**
-   - Dual-encoder vs cross-encoder intent selection (Casanueva et al., ACL 2020)
+1. **Permutation-Invariant Set Functions:**
+   - Deep Sets \citep{zaheer2017deep} (NeurIPS 2017)
+   - Set Transformer \citep{lee2019set} (ICML 2019)
+2. **Transformer Positional Information:**
+   - Attention Is All You Need \citep{vaswani2017attention} (NeurIPS 2017)
+   - Self-Attention with Relative Position Representations \citep{shaw2018self} (NAACL-HLT 2018)
+   - RoFormer: Rotary Position Embedding \citep{su2024roformer} (Neurocomputing 2024)
+   - ALiBi: Attention with Linear Biases \citep{press2022alibi} (ICLR 2022)
+   - Position Information in Transformers: An Overview \citep{dufter2022position} (Computational Linguistics 2022)
+3. **Order Sensitivity in Language Models:**
+   - Fantastically Ordered Prompts \citep{lu2022fantastically} (ACL 2022)
+   - Calibrate Before Use \citep{zhao2021calibrate} (ICML 2021)
+   - Lost in the Middle \citep{liu2024lost} (TACL 2024)
+   - LLM Sensitivity to Option Order in Multiple-Choice Questions \citep{pezeshkpour2024large} (Findings of NAACL 2024)
+   - LLMs Are Not Robust Multiple Choice Selectors \citep{zheng2024large} (ICLR 2024)
+4. **Intent Classification and Candidate Selection:**
+   - Efficient Intent Detection with Dual Sentence Encoders (Banking77) \citep{casanueva2020efficient} (ACL 2020)
+   - Passage Re-ranking with BERT \citep{nogueira2019passage} (arXiv 2019)
+   - Poly-encoders \citep{humeau2020polyencoders} (ICLR 2020)
+   - Laya Multi-Candidate Architecture \citep{laya2024} (GitHub 2024)
+5. **Confidence Calibration:**
+   - On Calibration of Modern Neural Networks \citep{guo2017calibration} (ICML 2017)
+   - Bayesian Binning into Quantiles \citep{naeini2015obtaining} (AAAI 2015)
+   - Measuring Calibration in Deep Learning \citep{nixon2019measuring} (CVPRW 2019)
+6. **Marginalization and Ensembles:**
+   - Deep Ensembles \citep{lakshminarayanan2017simple} (NeurIPS 2017)
+   - Test-Time Data Augmentation (TTA) \citep{ayhan2018test} (MIDL 2018)
+   - When and Why Test-Time Augmentation Works \citep{shanmugam2020when} (arXiv 2020)
+   - Self-Consistency in Chain-of-Thought Reasoning \citep{wang2023selfconsistency} (ICLR 2023)
+7. **Statistical Methodology:**
+   - An Introduction to the Bootstrap \citep{efron1993introduction} (Chapman & Hall/CRC 1993)
+   - McNemar's Test \citep{mcnemar1947note} (Psychometrika 1947)
+   - Benjamini-Hochberg False Discovery Rate \citep{benjamini1995controlling} (JRSS-B 1995)
+   - Kendall's Rank Correlation \citep{kendall1938new} (Biometrika 1938)
+8. **Pretrained Encoders & Research Artifact:**
+   - RoBERTa \citep{liu2019roberta} (arXiv 2019)
+   - Candidate Order Instability Research Release \citep{saxena2026candidate} (Zenodo DOI 10.5281/zenodo.22906245)
 
 ---
 
 ## 6. Reproducibility Guarantee
 
-All data reported in this manuscript is derived deterministically from the frozen research artifacts:
+All empirical results reported in this manuscript are derived deterministically from the frozen research artifacts:
 - Git Release: `v1.0.0`
 - Commit: `266bbb902871dc9974cbf516adea013e3c4eb084`
+- Permanent DOI: [10.5281/zenodo.22906245](https://doi.org/10.5281/zenodo.22906245)
 - Raw results: `research/results/corrected_marginalization_results.csv`
 - Statistical tests: `research/results/corrected_statistical_tests.csv`
-- Invariant tests: `python -m pytest tests/` (6/6 passing)
+- Invariant tests: `python -m pytest tests/` (7/7 passing)
