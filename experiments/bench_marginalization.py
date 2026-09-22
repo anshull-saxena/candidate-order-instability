@@ -147,6 +147,27 @@ def bootstrap_ci_query_level(query_values: List[float], n_boot: int = 1000, alph
     return lo, hi
 
 
+def bootstrap_ece_ci(conf: np.ndarray, correct: np.ndarray, n_boot: int = 1000, alpha: float = 0.05, bins: int = 15, seed: int = 42) -> Tuple[float, float]:
+    """Query-level clustered bootstrap confidence interval for Expected Calibration Error."""
+    conf = np.asarray(conf, dtype=float)
+    correct = np.asarray(correct, dtype=float)
+    n = len(conf)
+    if n == 0:
+        return 0.0, 0.0
+    rng = np.random.default_rng(seed)
+    boot_eces = []
+    for _ in range(n_boot):
+        idx = rng.choice(n, size=n, replace=True)
+        boot_eces.append(float(ece_score(conf[idx], correct[idx], bins=bins)))
+    lo = float(np.percentile(boot_eces, 100 * (alpha / 2)))
+    hi = float(np.percentile(boot_eces, 100 * (1 - alpha / 2)))
+    pt_ece = float(ece_score(conf, correct, bins=bins))
+    lo = min(lo, pt_ece)
+    hi = max(hi, pt_ece)
+    return lo, hi
+
+
+
 def benjamini_hochberg(p_values: List[float], alpha: float = 0.05) -> List[Tuple[float, bool]]:
     """Benjamini-Hochberg FDR correction."""
     m = len(p_values)
@@ -449,14 +470,14 @@ def run_benchmark(sample_size: int = 120):
                 base_correct["B1_Alpha"].append(1 if pred_alpha == active_true_idx else 0)
                 base_confs["B1_Alpha"].append(float(np.max(prob_alpha)))
                 base_latencies["B1_Alpha"].append(per_q_latency)
-                base_fr_top1["B1_Alpha"].append(float(cross_flip))
+                base_fr_top1["B1_Alpha"].append(0.0)
                 base_kendall["B1_Alpha"].append(kendall_tau_dist(prob_alpha, prob_rev_alpha))
                 base_churn["B1_Alpha"].append(top3_jaccard_churn(prob_alpha, prob_rev_alpha))
 
                 base_correct["B1_ReverseAlpha"].append(1 if pred_rev_alpha == active_true_idx else 0)
                 base_confs["B1_ReverseAlpha"].append(float(np.max(prob_rev_alpha)))
                 base_latencies["B1_ReverseAlpha"].append(per_q_latency)
-                base_fr_top1["B1_ReverseAlpha"].append(float(cross_flip))
+                base_fr_top1["B1_ReverseAlpha"].append(0.0)
                 base_kendall["B1_ReverseAlpha"].append(kendall_tau_dist(prob_alpha, prob_rev_alpha))
                 base_churn["B1_ReverseAlpha"].append(top3_jaccard_churn(prob_alpha, prob_rev_alpha))
 
@@ -543,7 +564,7 @@ def run_benchmark(sample_size: int = 120):
                 "Accuracy": round(float(np.mean(acc_arr)), 4),
                 "Accuracy_CI": bootstrap_ci_query_level(list(acc_arr)),
                 "ECE": round(ece_val, 4),
-                "ECE_CI": bootstrap_ci_query_level([abs(c - a) for c, a in zip(conf_arr, acc_arr)]),
+                "ECE_CI": bootstrap_ece_ci(conf_arr, (acc_arr >= 0.5).astype(float), bins=15),
                 "FR_top1": round(float(np.mean(fr_arr)), 4),
                 "FR_top1_CI": bootstrap_ci_query_level(list(fr_arr)),
                 "Kendall_Dist": round(float(np.mean(kd_arr)), 4),

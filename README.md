@@ -55,7 +55,7 @@ Because full self-attention encodes positional embeddings and inter-candidate co
 
 All findings reflect a controlled evaluation on the Banking77 test split ($N=120$ unique queries stratified across all 77 intent classes, strictly nested candidate subsets, $P=10$ permutations per query, and $S=3$ independently seeded base candidate orderings at $K=77$):
 
-1. **Order Sensitivity Scales Superlinearly with $K$:**  
+1. **Order Sensitivity Strongly Increases with $K$:**  
    Holding the query and candidate set fixed, random candidate permutations induce an argmax decision flip rate that scales from **$5.70\%$ [3.1%, 8.4%]** at $K=5$ to **$47.28\%$ [42.8%, 51.9%]** at $K=77$. Cross-permutation candidate logit variance increases by **$7.5\times$** ($8.40 \to 63.34$).
 2. **Canonical Sorting Hides but Does Not Eliminate Bias:**  
    Alphabetical sorting (`B1_Alpha`) produces zero run-to-run variance merely by repeating a deterministic token sequence. Evaluating against the counterfactual reverse alphabetical order (`B1_ReverseAlpha`, $Z \to A$) flips **$55.83\%$ [47.5%, 65.0%]** of all decisions at $K=77$. Canonical sorting locks in positional exposure bias rather than removing it.
@@ -191,33 +191,33 @@ pytest -v experiments/tests/test_marginalization_invariants.py
 
 All metrics below reflect $N=120$ queries, strictly nested candidate sets, and 95% query-level bootstrap confidence intervals. For the complete per-query raw data, see [`results/raw/corrected_per_query_results.csv`](results/raw/corrected_per_query_results.csv) and [`paper/tables/paper_results_table.csv`](paper/tables/paper_results_table.csv).
 
-| $K$ | Chance ($1/K$) | Method | Accuracy [95% CI] | ECE [95% CI] | $\text{FR}_{\text{top1}}$ [95% CI] | p50 Latency | Adj. $p$-val | FDR Sig |
-| :---: | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **5** | 20.0% | **B0_Native** | 0.925 [0.88, 0.97] | 0.147 [0.17, 0.25] | 0.000 [0.00, 0.00] | 45.3 ms | 1.0000 | NO |
-| 5 | 20.0% | **B0_Random** | 0.925 [0.88, 0.97] | 0.160 [0.17, 0.25] | 0.057 [0.03, 0.08] | 45.3 ms | 1.0000 | NO |
-| 5 | 20.0% | **B1_Alpha** | 0.908 [0.86, 0.96] | 0.131 [0.16, 0.24] | 0.033 [0.01, 0.07] | 45.3 ms | 1.0000 | NO |
-| 5 | 20.0% | **Rand_Marg_M5** | 0.925 [0.88, 0.97] | 0.144 [0.17, 0.25] | 0.017 [0.00, 0.04] | 226.7 ms | 1.0000 | NO |
-| 5 | 20.0% | **B2_Cyclic_M5** | 0.908 [0.85, 0.96] | 0.124 [0.17, 0.24] | 0.000 [0.00, 0.00] | 226.7 ms | 1.0000 | NO |
-| **10** | 10.0% | **B0_Native** | 0.875 [0.82, 0.93] | 0.104 [0.14, 0.23] | 0.000 [0.00, 0.00] | 60.9 ms | 1.0000 | NO |
-| 10 | 10.0% | **B0_Random** | 0.833 [0.77, 0.90] | 0.103 [0.13, 0.22] | 0.064 [0.04, 0.09] | 60.9 ms | 0.7351 | NO |
-| 10 | 10.0% | **B1_Alpha** | 0.867 [0.81, 0.93] | 0.113 [0.13, 0.22] | 0.050 [0.02, 0.09] | 60.9 ms | 1.0000 | NO |
-| 10 | 10.0% | **Rand_Marg_M5** | 0.883 [0.82, 0.93] | 0.105 [0.13, 0.22] | 0.033 [0.01, 0.07] | 304.7 ms | 1.0000 | NO |
-| 10 | 10.0% | **B2_Cyclic_M5** | 0.875 [0.82, 0.93] | 0.112 [0.12, 0.22] | 0.008 [0.00, 0.03] | 304.7 ms | 1.0000 | NO |
-| **20** | 5.0% | **B0_Native** | 0.767 [0.69, 0.84] | 0.191 [0.17, 0.30] | 0.000 [0.00, 0.00] | 97.4 ms | 1.0000 | NO |
-| 20 | 5.0% | **B0_Random** | 0.817 [0.75, 0.88] | 0.153 [0.12, 0.23] | 0.120 [0.08, 0.16] | 97.4 ms | 0.4922 | NO |
-| 20 | 5.0% | **B1_Alpha** | 0.792 [0.72, 0.86] | 0.162 [0.15, 0.27] | 0.117 [0.07, 0.18] | 97.4 ms | 1.0000 | NO |
-| 20 | 5.0% | **Rand_Marg_M5** | 0.817 [0.75, 0.88] | 0.113 [0.13, 0.23] | 0.042 [0.01, 0.08] | 486.8 ms | 0.4922 | NO |
-| 20 | 5.0% | **B2_Cyclic_M5** | 0.792 [0.72, 0.87] | 0.107 [0.14, 0.24] | 0.033 [0.01, 0.07] | 486.8 ms | 1.0000 | NO |
-| **40** | 2.5% | **B0_Native** | 0.617 [0.53, 0.71] | 0.265 [0.26, 0.41] | 0.000 [0.00, 0.00] | 146.1 ms | 1.0000 | NO |
-| 40 | 2.5% | **B0_Random** | 0.650 [0.56, 0.73] | 0.267 [0.26, 0.40] | 0.221 [0.18, 0.27] | 146.1 ms | 1.0000 | NO |
-| 40 | 2.5% | **B1_Alpha** | 0.692 [0.61, 0.77] | 0.212 [0.21, 0.35] | 0.167 [0.10, 0.23] | 146.1 ms | 0.4922 | NO |
-| 40 | 2.5% | **Rand_Marg_M5** | 0.700 [0.62, 0.78] | 0.183 [0.25, 0.37] | 0.117 [0.06, 0.18] | 730.4 ms | 0.2344 | NO |
-| 40 | 2.5% | **B2_Cyclic_M5** | **0.708 [0.62, 0.79]** | **0.172 [0.23, 0.35]** | **0.050 [0.02, 0.09]** | **730.4 ms** | **0.0440** | **YES (*)** |
-| **77** | 1.3% | **B0_Native** | 0.422 [0.34, 0.50] | 0.370 [0.35, 0.48] | 0.000 [0.00, 0.00] | 224.7 ms | 1.0000 | NO |
-| 77 | 1.3% | **B0_Random** | 0.436 [0.36, 0.51] | 0.386 [0.34, 0.47] | 0.473 [0.43, 0.52] | 224.7 ms | 1.0000 | NO |
-| 77 | 1.3% | **B1_Alpha** | 0.492 [0.40, 0.58] | 0.334 [0.35, 0.49] | 0.558 [0.47, 0.65] | 224.7 ms | 1.0000 | NO |
-| 77 | 1.3% | **Rand_Marg_M5** | 0.550 [0.47, 0.62] | 0.096 [0.27, 0.35] | 0.258 [0.20, 0.32] | 1123.4 ms | 1.0000 | NO |
-| 77 | 1.3% | **B2_Cyclic_M5** | 0.497 [0.42, 0.57] | 0.162 [0.26, 0.35] | 0.161 [0.12, 0.21] | 1123.4 ms | 1.0000 | NO |
+| $K$ | Chance ($1/K$) | Method | Accuracy [95% CI] | ECE [95% CI] | $\text{FR}_{\text{top1}}$ [95% CI] | Cross-Canonical Flip [95% CI] | p50 Latency | Adj. $p$-val | FDR Sig |
+| :---: | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **5** | 20.0% | **B0_Native** | 0.925 [0.88, 0.97] | 0.147 [0.12, 0.20] | 0.000 [0.00, 0.00] | - | 45.3 ms | 1.0000 | NO |
+| 5 | 20.0% | **B0_Random** | 0.925 [0.88, 0.97] | 0.160 [0.12, 0.22] | 0.057 [0.03, 0.08] | - | 45.3 ms | 1.0000 | NO |
+| 5 | 20.0% | **B1_Alpha** | 0.908 [0.86, 0.96] | 0.131 [0.10, 0.19] | 0.000 [0.00, 0.00] | 0.033 [0.01, 0.07] | 45.3 ms | 1.0000 | NO |
+| 5 | 20.0% | **Rand_Marg_M5** | 0.925 [0.88, 0.97] | 0.144 [0.11, 0.20] | 0.017 [0.00, 0.04] | - | 226.7 ms | 1.0000 | NO |
+| 5 | 20.0% | **B2_Cyclic_M5** | 0.908 [0.85, 0.96] | 0.124 [0.10, 0.18] | 0.000 [0.00, 0.00] | - | 226.7 ms | 1.0000 | NO |
+| **10** | 10.0% | **B0_Native** | 0.875 [0.82, 0.93] | 0.104 [0.07, 0.17] | 0.000 [0.00, 0.00] | - | 60.9 ms | 1.0000 | NO |
+| 10 | 10.0% | **B0_Random** | 0.833 [0.77, 0.90] | 0.103 [0.07, 0.17] | 0.064 [0.04, 0.09] | - | 60.9 ms | 0.7351 | NO |
+| 10 | 10.0% | **B1_Alpha** | 0.867 [0.81, 0.93] | 0.113 [0.09, 0.18] | 0.000 [0.00, 0.00] | 0.050 [0.02, 0.09] | 60.9 ms | 1.0000 | NO |
+| 10 | 10.0% | **Rand_Marg_M5** | 0.883 [0.82, 0.93] | 0.105 [0.08, 0.16] | 0.033 [0.01, 0.07] | - | 304.7 ms | 1.0000 | NO |
+| 10 | 10.0% | **B2_Cyclic_M5** | 0.875 [0.82, 0.93] | 0.112 [0.08, 0.18] | 0.008 [0.00, 0.03] | - | 304.7 ms | 1.0000 | NO |
+| **20** | 5.0% | **B0_Native** | 0.767 [0.69, 0.84] | 0.191 [0.14, 0.26] | 0.000 [0.00, 0.00] | - | 97.4 ms | 1.0000 | NO |
+| 20 | 5.0% | **B0_Random** | 0.817 [0.75, 0.88] | 0.153 [0.10, 0.22] | 0.120 [0.08, 0.16] | - | 97.4 ms | 0.4922 | NO |
+| 20 | 5.0% | **B1_Alpha** | 0.792 [0.72, 0.86] | 0.162 [0.12, 0.25] | 0.000 [0.00, 0.00] | 0.117 [0.07, 0.18] | 97.4 ms | 1.0000 | NO |
+| 20 | 5.0% | **Rand_Marg_M5** | 0.817 [0.75, 0.88] | 0.113 [0.08, 0.18] | 0.042 [0.01, 0.08] | - | 486.8 ms | 0.4922 | NO |
+| 20 | 5.0% | **B2_Cyclic_M5** | 0.792 [0.72, 0.87] | 0.107 [0.08, 0.19] | 0.033 [0.01, 0.07] | - | 486.8 ms | 1.0000 | NO |
+| **40** | 2.5% | **B0_Native** | 0.617 [0.53, 0.71] | 0.265 [0.21, 0.36] | 0.000 [0.00, 0.00] | - | 146.1 ms | 1.0000 | NO |
+| 40 | 2.5% | **B0_Random** | 0.650 [0.56, 0.73] | 0.267 [0.21, 0.36] | 0.221 [0.18, 0.27] | - | 146.1 ms | 1.0000 | NO |
+| 40 | 2.5% | **B1_Alpha** | 0.692 [0.61, 0.77] | 0.212 [0.16, 0.30] | 0.000 [0.00, 0.00] | 0.167 [0.10, 0.23] | 146.1 ms | 0.4922 | NO |
+| 40 | 2.5% | **Rand_Marg_M5** | 0.700 [0.62, 0.78] | 0.180 [0.14, 0.27] | 0.117 [0.06, 0.18] | - | 730.4 ms | 0.2344 | NO |
+| 40 | 2.5% | **B2_Cyclic_M5** | **0.708 [0.62, 0.79]** | **0.172 [0.13, 0.26]** | **0.050 [0.02, 0.09]** | - | **730.4 ms** | **0.0440** | **YES (*)** |
+| **77** | 1.3% | **B0_Native** | 0.422 [0.34, 0.50] | 0.370 [0.30, 0.45] | 0.000 [0.00, 0.00] | - | 224.7 ms | 1.0000 | NO |
+| 77 | 1.3% | **B0_Random** | 0.436 [0.36, 0.51] | 0.386 [0.31, 0.47] | 0.473 [0.43, 0.52] | - | 224.7 ms | 1.0000 | NO |
+| 77 | 1.3% | **B1_Alpha** | 0.492 [0.40, 0.58] | 0.334 [0.27, 0.43] | 0.000 [0.00, 0.00] | 0.558 [0.48, 0.65] | 224.7 ms | 1.0000 | NO |
+| 77 | 1.3% | **Rand_Marg_M5** | 0.550 [0.47, 0.62] | 0.096 [0.09, 0.20] | 0.258 [0.20, 0.32] | - | 1123.4 ms | 1.0000 | NO |
+| 77 | 1.3% | **B2_Cyclic_M5** | 0.497 [0.42, 0.57] | 0.162 [0.13, 0.26] | 0.161 [0.12, 0.21] | - | 1123.4 ms | 1.0000 | NO |
 
 ---
 
@@ -225,7 +225,7 @@ All metrics below reflect $N=120$ queries, strictly nested candidate sets, and 9
 
 #### Figure 1: Cardinality Scaling of Order Instability
 ![Figure 1: Cardinality vs Instability](results/figures/fig1_cardinality_vs_instability.png)  
-*Argmax decision flip rate ($\mathrm{FR}_{\mathrm{top1}}$) scales superlinearly from $5.70\%$ at $K=5$ to $47.28\%$ at $K=77$ across 10 random permutations for the identical candidate set.*
+*Argmax decision flip rate ($\mathrm{FR}_{\mathrm{top1}}$) strongly increases with candidate cardinality from $5.70\%$ at $K=5$ to $47.28\%$ at $K=77$ across 10 random permutations for the identical candidate set.*
 
 #### Figure 2: Permutation Logit Variance Scaling
 ![Figure 2: Logit Variance Scaling](results/figures/fig2_cardinality_vs_logit_variance.png)  
@@ -241,7 +241,7 @@ All metrics below reflect $N=120$ queries, strictly nested candidate sets, and 9
 
 #### Figure 5: Three-Objective Pareto Frontier at $K=77$
 ![Figure 5: Pareto Frontier at K=77](results/figures/fig5_pareto_frontier_k77.png)  
-*Pareto trade-offs across Accuracy ($\uparrow$), Latency ($\downarrow$), and Instability ($\downarrow$). B1_Alpha does not dominate marginalization because of its high cross-canonical instability ($55.8\%$).*
+*Pareto trade-offs across Accuracy ($\uparrow$), Latency ($\downarrow$), and Instability ($\downarrow$). Using within-method permutation instability ($\mathrm{FR}_{\mathrm{top1}}$), B1_Alpha achieves zero rerun variance and lowest latency, while Rand_Marg_M5 maximizes accuracy (55.0%) and B2_Cyclic_M5 minimizes residual instability (16.1%) among higher-accuracy methods. (Note: B1_Alpha's 0% rerun instability is counteracted by a 55.8% cross-canonical exposure bias).*
 
 #### Figure 6: Cyclic vs Random Marginalization
 ![Figure 6: Cyclic vs Random Marginalization](results/figures/fig6_cyclic_vs_random.png)  
@@ -274,11 +274,11 @@ Every claim in the paper is evaluated against our pre-specified statistical crit
 | :--- | :---: | :--- |
 | **Order sensitivity increases with candidate cardinality $K$** | **SUPPORTED** | $\mathrm{FR}_{\mathrm{top1}}$ increases from $5.70\%$ to $47.28\%$; permutation logit variance increases $7.5\times$ ($8.40 \to 63.34$) across strictly nested candidate sets. |
 | **Candidate presentation order changes decisions on fixed candidate sets** | **SUPPORTED** | Fixed-set flip rate reaches $47.28\%$ at $K=77$ ($p < 10^{-12}$ via Wilcoxon vs zero instability). |
-| **Canonical alphabetical sorting eliminates order sensitivity** | **NOT_SUPPORTED** | Counterfactual reverse alphabetical sorting ($Z \to A$) flips $55.83\%$ of decisions at $K=77$. B1 locks in positional bias rather than removing it. |
+| **Canonical alphabetical sorting eliminates order sensitivity** | **NOT_SUPPORTED** | Counterfactual reverse alphabetical sorting ($Z \to A$) flips $55.83\%$ [47.5%, 65.0%] of decisions at $K=77$ (descriptive paired disagreement). B1 locks in positional bias rather than removing it. |
 | **Random marginalization reduces decision instability** | **SUPPORTED** | Residual flip rate monotonically decreases from $47.28\%$ ($M=1$) to $25.83\%$ ($M=5$). |
 | **Cyclic shifts suppress instability more compute-efficiently than random sampling** | **SUPPORTED** | Residual flip rate at $M=5, K=77$ is $16.11\%$ for cyclic vs $25.83\%$ for random (non-overlapping 95% bootstrap CIs). |
 | **Marginalization significantly improves accuracy over native ordering** | **PRELIMINARY** | Only 1 of 45 comparisons reached FDR significance (`B2_Cyclic_M5` at $K=40$, $+9.17\%, p_{\mathrm{adj}} = 0.0440$). At $K=77$, gains remain statistically non-significant ($p_{\mathrm{adj}} = 1.0000$). |
-| **Marginalization improves probability calibration (ECE)** | **SUPPORTED** | ECE at $K=77$ improves from $0.3857$ ($M=1$) to $0.0960$ ($M=5$). |
+| **Marginalization improves probability calibration (ECE)** | **SUPPORTED** | ECE at $K=77$ improves from $0.3857$ ($M=1$, CI [0.31, 0.47]) to $0.0960$ ($M=5$, CI [0.09, 0.20]). |
 | **The architecture exhibits catastrophic cardinality collapse** | **NOT_SUPPORTED** | Accuracy at $K=77$ ($42.22\%$) remains $32.5\times$ above random chance ($1.30\%$). |
 
 ---
@@ -306,7 +306,7 @@ pip install -r requirements.txt
 git clone https://github.com/NandhaKishorM/laya.git ../laya
 pip install -e ../laya
 
-# 3. Verify metric invariants (6/6 tests passing)
+# 3. Verify metric invariants (7/7 tests passing)
 pytest -v experiments/tests/test_marginalization_invariants.py
 
 # 4. Run full benchmark (or fast smoke test with --smoke-test 10)
@@ -325,7 +325,7 @@ For detailed protocol specifications, see [`reproduction/README.md`](reproductio
 ```bibtex
 @misc{order_instability_2026,
   title={Candidate Order Instability in Non-Autoregressive Multi-Candidate Transformers},
-  author={Senior ML Research Team},
+  author={Saxena, Anshul},
   year={2026},
   howpublished={\url{https://github.com/anshull-saxena/candidate-order-instability}},
   note={Preprint under preparation}

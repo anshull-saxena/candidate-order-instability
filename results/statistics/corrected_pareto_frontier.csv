@@ -1,51 +1,51 @@
 K,Method,Accuracy,Latency_p50_ms,Instability_FR,Pareto_Status
-5,B0_Native,0.925,45.34,0.0,PARETO_OPTIMAL
+5,B0_Native,0.925,45.34,0.0,Dominated by: B1_ReverseAlpha
 5,B0_Random,0.925,45.34,0.057,"Dominated by: B0_Native,B1_ReverseAlpha"
-5,B1_Alpha,0.9083,45.34,0.0333,"Dominated by: B0_Native,B1_ReverseAlpha"
-5,B1_ReverseAlpha,0.9333,45.34,0.0333,PARETO_OPTIMAL
+5,B1_Alpha,0.9083,45.34,0.0,"Dominated by: B0_Native,B1_ReverseAlpha"
+5,B1_ReverseAlpha,0.9333,45.34,0.0,PARETO_OPTIMAL
 5,Rand_Marg_M2,0.925,90.68,0.0333,"Dominated by: B0_Native,B1_ReverseAlpha"
-5,Rand_Marg_M3,0.925,136.02,0.0167,Dominated by: B0_Native
-5,Rand_Marg_M5,0.925,226.7,0.0167,"Dominated by: B0_Native,Rand_Marg_M3"
+5,Rand_Marg_M3,0.925,136.02,0.0167,"Dominated by: B0_Native,B1_ReverseAlpha"
+5,Rand_Marg_M5,0.925,226.69,0.0167,"Dominated by: B0_Native,B1_ReverseAlpha,Rand_Marg_M3"
 5,B2_Cyclic_M2,0.9083,90.68,0.0417,"Dominated by: B0_Native,B1_Alpha,B1_ReverseAlpha,Rand_Marg_M2"
 5,B2_Cyclic_M3,0.9083,136.02,0.0333,"Dominated by: B0_Native,B1_Alpha,B1_ReverseAlpha,Rand_Marg_M2,Rand_Marg_M3"
-5,B2_Cyclic_M5,0.9083,226.7,0.0,Dominated by: B0_Native
-10,B0_Native,0.875,60.94,0.0,PARETO_OPTIMAL
+5,B2_Cyclic_M5,0.9083,226.69,0.0,"Dominated by: B0_Native,B1_Alpha,B1_ReverseAlpha"
+10,B0_Native,0.875,60.94,0.0,Dominated by: B1_ReverseAlpha
 10,B0_Random,0.8333,60.94,0.0643,"Dominated by: B0_Native,B1_Alpha,B1_ReverseAlpha"
-10,B1_Alpha,0.8667,60.94,0.05,"Dominated by: B0_Native,B1_ReverseAlpha"
-10,B1_ReverseAlpha,0.8917,60.94,0.05,PARETO_OPTIMAL
-10,Rand_Marg_M2,0.875,121.87,0.025,Dominated by: B0_Native
-10,Rand_Marg_M3,0.875,182.81,0.025,"Dominated by: B0_Native,Rand_Marg_M2,B2_Cyclic_M3"
-10,Rand_Marg_M5,0.8833,304.68,0.0333,Dominated by: B2_Cyclic_M2
-10,B2_Cyclic_M2,0.8833,121.87,0.0333,PARETO_OPTIMAL
-10,B2_Cyclic_M3,0.875,182.81,0.0083,Dominated by: B0_Native
-10,B2_Cyclic_M5,0.875,304.68,0.0083,"Dominated by: B0_Native,B2_Cyclic_M3"
-20,B0_Native,0.7667,97.36,0.0,PARETO_OPTIMAL
-20,B0_Random,0.8167,97.36,0.1202,PARETO_OPTIMAL
-20,B1_Alpha,0.7917,97.36,0.1167,Dominated by: B1_ReverseAlpha
-20,B1_ReverseAlpha,0.8,97.36,0.1167,PARETO_OPTIMAL
-20,Rand_Marg_M2,0.8,194.73,0.0833,PARETO_OPTIMAL
+10,B1_Alpha,0.8667,60.94,0.0,"Dominated by: B0_Native,B1_ReverseAlpha"
+10,B1_ReverseAlpha,0.8917,60.94,0.0,PARETO_OPTIMAL
+10,Rand_Marg_M2,0.875,121.88,0.025,"Dominated by: B0_Native,B1_ReverseAlpha"
+10,Rand_Marg_M3,0.875,182.81,0.025,"Dominated by: B0_Native,B1_ReverseAlpha,Rand_Marg_M2,B2_Cyclic_M3"
+10,Rand_Marg_M5,0.8833,304.69,0.0333,"Dominated by: B1_ReverseAlpha,B2_Cyclic_M2"
+10,B2_Cyclic_M2,0.8833,121.88,0.0333,Dominated by: B1_ReverseAlpha
+10,B2_Cyclic_M3,0.875,182.81,0.0083,"Dominated by: B0_Native,B1_ReverseAlpha"
+10,B2_Cyclic_M5,0.875,304.69,0.0083,"Dominated by: B0_Native,B1_ReverseAlpha,B2_Cyclic_M3"
+20,B0_Native,0.7667,97.37,0.0,"Dominated by: B1_Alpha,B1_ReverseAlpha"
+20,B0_Random,0.8167,97.37,0.1202,PARETO_OPTIMAL
+20,B1_Alpha,0.7917,97.37,0.0,Dominated by: B1_ReverseAlpha
+20,B1_ReverseAlpha,0.8,97.37,0.0,PARETO_OPTIMAL
+20,Rand_Marg_M2,0.8,194.73,0.0833,Dominated by: B1_ReverseAlpha
 20,Rand_Marg_M3,0.8083,292.09,0.0583,PARETO_OPTIMAL
 20,Rand_Marg_M5,0.8167,486.82,0.0417,PARETO_OPTIMAL
-20,B2_Cyclic_M2,0.7917,194.73,0.0833,Dominated by: Rand_Marg_M2
-20,B2_Cyclic_M3,0.7917,292.09,0.0667,Dominated by: Rand_Marg_M3
-20,B2_Cyclic_M5,0.7917,486.82,0.0333,PARETO_OPTIMAL
-40,B0_Native,0.6167,146.08,0.0,PARETO_OPTIMAL
-40,B0_Random,0.65,146.08,0.2209,"Dominated by: B1_Alpha,B1_ReverseAlpha"
-40,B1_Alpha,0.6917,146.08,0.1667,Dominated by: B1_ReverseAlpha
-40,B1_ReverseAlpha,0.725,146.08,0.1667,PARETO_OPTIMAL
+20,B2_Cyclic_M2,0.7917,194.73,0.0833,"Dominated by: B1_Alpha,B1_ReverseAlpha,Rand_Marg_M2"
+20,B2_Cyclic_M3,0.7917,292.09,0.0667,"Dominated by: B1_Alpha,B1_ReverseAlpha,Rand_Marg_M3"
+20,B2_Cyclic_M5,0.7917,486.82,0.0333,"Dominated by: B1_Alpha,B1_ReverseAlpha"
+40,B0_Native,0.6167,146.07,0.0,"Dominated by: B1_Alpha,B1_ReverseAlpha"
+40,B0_Random,0.65,146.07,0.2209,"Dominated by: B1_Alpha,B1_ReverseAlpha"
+40,B1_Alpha,0.6917,146.07,0.0,Dominated by: B1_ReverseAlpha
+40,B1_ReverseAlpha,0.725,146.07,0.0,PARETO_OPTIMAL
 40,Rand_Marg_M2,0.7,292.15,0.1833,Dominated by: B1_ReverseAlpha
-40,Rand_Marg_M3,0.7,438.23,0.1417,PARETO_OPTIMAL
-40,Rand_Marg_M5,0.7,730.38,0.1167,Dominated by: B2_Cyclic_M5
-40,B2_Cyclic_M2,0.6667,292.15,0.125,PARETO_OPTIMAL
-40,B2_Cyclic_M3,0.6917,438.23,0.1,PARETO_OPTIMAL
-40,B2_Cyclic_M5,0.7083,730.38,0.05,PARETO_OPTIMAL
-77,B0_Native,0.4222,224.68,0.0,PARETO_OPTIMAL
-77,B0_Random,0.4361,224.68,0.4728,PARETO_OPTIMAL
-77,B1_Alpha,0.4917,224.68,0.5583,PARETO_OPTIMAL
-77,B1_ReverseAlpha,0.45,224.68,0.5583,Dominated by: B1_Alpha
-77,Rand_Marg_M2,0.4778,449.37,0.3806,Dominated by: B2_Cyclic_M2
+40,Rand_Marg_M3,0.7,438.23,0.1417,Dominated by: B1_ReverseAlpha
+40,Rand_Marg_M5,0.7,730.38,0.1167,"Dominated by: B1_ReverseAlpha,B2_Cyclic_M5"
+40,B2_Cyclic_M2,0.6667,292.15,0.125,"Dominated by: B1_Alpha,B1_ReverseAlpha"
+40,B2_Cyclic_M3,0.6917,438.23,0.1,"Dominated by: B1_Alpha,B1_ReverseAlpha"
+40,B2_Cyclic_M5,0.7083,730.38,0.05,Dominated by: B1_ReverseAlpha
+77,B0_Native,0.4222,224.68,0.0,"Dominated by: B1_Alpha,B1_ReverseAlpha"
+77,B0_Random,0.4361,224.68,0.4728,"Dominated by: B1_Alpha,B1_ReverseAlpha"
+77,B1_Alpha,0.4917,224.68,0.0,PARETO_OPTIMAL
+77,B1_ReverseAlpha,0.45,224.68,0.0,Dominated by: B1_Alpha
+77,Rand_Marg_M2,0.4778,449.37,0.3806,"Dominated by: B1_Alpha,B2_Cyclic_M2"
 77,Rand_Marg_M3,0.5083,674.05,0.3472,PARETO_OPTIMAL
 77,Rand_Marg_M5,0.55,1123.41,0.2583,PARETO_OPTIMAL
-77,B2_Cyclic_M2,0.4806,449.37,0.2944,PARETO_OPTIMAL
-77,B2_Cyclic_M3,0.4972,674.05,0.2306,PARETO_OPTIMAL
+77,B2_Cyclic_M2,0.4806,449.37,0.2944,Dominated by: B1_Alpha
+77,B2_Cyclic_M3,0.4972,674.05,0.2305,PARETO_OPTIMAL
 77,B2_Cyclic_M5,0.4972,1123.41,0.1611,PARETO_OPTIMAL

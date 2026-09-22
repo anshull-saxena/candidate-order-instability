@@ -114,7 +114,7 @@ print("[OK] Saved Figure 2")
 # -----------------------------------------------------------------------------
 alpha_accs = [float(next(x for x in summary_rows if int(x["K"]) == K and x["Method"] == "B1_Alpha")["Accuracy"]) for K in K_vals]
 rev_accs = [float(next(x for x in summary_rows if int(x["K"]) == K and x["Method"] == "B1_ReverseAlpha")["Accuracy"]) for K in K_vals]
-cross_flips = [float(next(x for x in summary_rows if int(x["K"]) == K and x["Method"] == "B1_Alpha")["FR_top1"]) for K in K_vals]
+cross_flips = [float(next(x for x in summary_rows if int(x["K"]) == K and x["Method"] == "B1_Alpha")["CrossCanonicalFlip"]) for K in K_vals]
 
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 4.5))
 x = np.arange(len(K_vals))

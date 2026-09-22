@@ -49,8 +49,9 @@ experiments/tests/test_marginalization_invariants.py::test_candidate_set_nesting
 experiments/tests/test_marginalization_invariants.py::test_canonical_repeatability_vs_cross_canonical PASSED
 experiments/tests/test_marginalization_invariants.py::test_cyclic_residual_flip_independence PASSED
 experiments/tests/test_marginalization_invariants.py::test_ece_edge_cases_and_reference PASSED
+experiments/tests/test_marginalization_invariants.py::test_ece_bootstrap_ci_contains_estimate PASSED
 
-============================== 6 passed in 1.16s ===============================
+============================== 7 passed in 3.47s ===============================
 ```
 
 ---

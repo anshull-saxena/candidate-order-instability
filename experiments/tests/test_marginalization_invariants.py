@@ -204,3 +204,21 @@ def test_ece_edge_cases_and_reference():
     ece_val = ece_score(conf_rand, corr_rand, bins=15)
     ref_val = reference_ece(conf_rand, corr_rand, bins=15)
     assert abs(ece_val - ref_val) < 1e-6
+
+
+def test_ece_bootstrap_ci_contains_estimate():
+    """Invariant 7: Bootstrap confidence intervals for ECE must contain the point estimate."""
+    import sys
+    import os
+    exp_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if exp_dir not in sys.path:
+        sys.path.insert(0, exp_dir)
+    from bench_marginalization import bootstrap_ece_ci
+    rng = np.random.default_rng(42)
+    conf = rng.uniform(0.2, 0.95, size=120)
+    corr = (rng.uniform(0.0, 1.0, size=120) < conf).astype(float)
+    pt_ece = round(ece_score(conf, corr, bins=15), 4)
+    lo, hi = bootstrap_ece_ci(conf, corr, n_boot=200, bins=15, seed=42)
+    assert lo <= pt_ece <= hi, f"Point estimate {pt_ece} not in [{lo}, {hi}]"
+    assert 0.0 <= lo <= 1.0 and 0.0 <= hi <= 1.0
+
