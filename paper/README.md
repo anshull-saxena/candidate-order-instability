@@ -15,21 +15,17 @@ This directory contains the publication manuscript, bibliography, and build arti
 
 ```
 paper/
-├── manuscript.tex          # Complete LaTeX manuscript (12 sections, 3 tables, 7 figures)
-├── references.bib          # Verified BibTeX citations and structured literature TODOs
-├── README.md               # This compilation and manuscript documentation guide
-├── manuscript.pdf          # Precompiled 14-page camera-ready PDF document
-├── figures/                # High-resolution vector/PNG empirical figures (fig1 through fig7)
-│   ├── fig1_cardinality_vs_instability.png
-│   ├── fig2_cardinality_vs_logit_variance.png
-│   ├── fig3_canonical_counterfactual.png
-│   ├── fig4_marginalization_scaling.png
-│   ├── fig5_pareto_frontier_k77.png
-│   ├── fig6_cyclic_vs_random.png
-│   └── fig7_k77_query_heterogeneity.png
-└── tables/                 # Frozen publication CSV tables
-    ├── paper_results_table.csv
-    └── research_claims.csv
+├── manuscript.tex               # Complete LaTeX manuscript (12 sections, 3 tables, 7 figures)
+├── manuscript.pdf               # Camera-ready 19-page compiled PDF document
+├── references.bib               # 29 verified BibTeX citations across 8 literature categories
+├── README.md                    # Compilation instructions and paper documentation guide
+├── reviewer_audit.md            # Comprehensive adversarial Reviewer #2 technical audit
+├── venue_readiness.md           # Target venue comparative analysis (TMLR, ARR/EMNLP, NeurIPS)
+├── arxiv_submission_checklist.md# Complete arXiv submission metadata, abstract, and pre-flight checklist
+├── final_publication_audit.py   # Automated 10-point programmatic integrity test script
+├── figures/                     # High-resolution 300 DPI empirical figures (fig1 through fig7)
+├── tables/                      # Frozen publication CSV tables
+└── arxiv/                       # Standalone, self-contained arXiv submission package
 ```
 
 ---
@@ -66,7 +62,7 @@ pdflatex -interaction=nonstopmode manuscript.tex
 
 The manuscript is organized into 12 sections following empirical machine learning standards:
 
-1. **Abstract:** High-level summary of the research questions, strictly nested distractor protocol, key scaling findings, the canonicalization fallacy, inference-time marginalization, multiple-testing FDR control, and the negative replication result.
+1. **Abstract:** High-level summary of the research questions, strictly nested distractor protocol, key scaling findings, the canonicalization fallacy, inference-time marginalization, multiple-testing FDR control, and the negative replication result (210 words).
 2. **Introduction:** Mathematical formulation of permutation invariance for multi-candidate classification ($f(q, \pi(\mathcal{C})) = f(q, \mathcal{C})$), single-pass delimiter marker concatenation in bidirectional encoders, and explicit research questions.
 3. **Related Work:** Comprehensive literature survey across 6 structured subsections:
    - 3.1 Permutation-Invariant Learning on Sets (Deep Sets, Set Transformer, set functions vs sequence encoders)
@@ -78,12 +74,18 @@ The manuscript is organized into 12 sections following empirical machine learnin
 4. **Problem Formulation and Model Architecture:** Precise token serialization equations, marker embedding projections, and self-attention coupling mechanisms in `convaiinnovations/laya`.
 5. **Experimental Setup:** Controlled distractor nesting protocol ($K_5 \subset K_{10} \subset K_{20} \subset K_{40} \subset K_{77}$), $N=120$ intent-stratified queries, 10 random permutations per query, 3 base candidate sequence replications at $K=77$, and full intervention suite (`B0_Native`, `B0_Random`, `B1_Alpha`, `B1_ReverseAlpha`, `Rand_Marg_M{2,3,5}`, `B2_Cyclic_M{2,3,5}`).
 6. **Metrics and Statistical Analysis:** Formal definitions of within-method pairwise argmax decision flip rate ($\mathrm{FR}_{\mathrm{top1}}$), counterfactual cross-canonical flip rate ($\mathrm{CrossCanonicalFlip}$), residual ensemble flip rate ($\mathrm{ResFlip}_M$), 15-bin Expected Calibration Error (ECE), normalized Kendall's rank distance ($\tau_{\mathrm{norm}}$), 1,000-sample query-level clustered bootstrap CIs, exact McNemar tests, and Benjamini-Hochberg FDR control ($q=0.05$).
-7. **Results:** Detailed empirical results across cardinality scaling, logit variance explosion ($7.5\times$), the canonicalization exposure bias ($55.83\%$ cross-flip at $K=77$), marginalization scaling laws, orthogonal cyclic vs random permutations, query-level vulnerability heterogeneity, and the three-objective Pareto frontier.
-8. **Statistical Significance and Hypothesis Testing:** Rigorous reporting of the 45 pre-specified paired comparisons against `B0_Native`. Highlights that only cyclic marginalization at $K=40$ achieves FDR-adjusted statistical significance ($+9.17$ pp, adjusted $p=0.04395$).
-9. **Important Negative Replication Result:** Full accounting of the non-replication of the exploratory $65.0\%$ cyclic accuracy finding at $K=77$, which regressed to $48.06\%$ [39.7%, 55.6\%] under pre-specified multi-seed replication ($N=120, S=3$).
-10. **Discussion:** Architectural origins of positional sensitivity, the fallacy of relying on alphabetical canonicalization for determinism, and inference-time marginalization trade-offs.
-11. **Limitations:** Single backbone/checkpoint scope (`convaiinnovations/laya`), domain specificity (Banking77), post-training inference scope, and statistical power constraints at $K=77$ ($N=120$).
-12. **Conclusion & Reproducibility:** Summary and permanent archive metadata pointing to Zenodo DOI `10.5281/zenodo.22906245`.
+7. **Results:** Detailed empirical results across 6 thematic subsections:
+   - 7.1 Cardinality Scaling of Order Instability ($\mathrm{FR}_{\mathrm{top1}}$ scaling $5.70\% \to 47.28\%$; $7.5\times$ logit variance expansion)
+   - 7.2 The Canonical Ordering Counterfactual ($55.83\%$ cross-order disagreement at $K=77$ under $A \to Z$ vs $Z \to A$)
+   - 7.3 Random Marginalization Scaling (monotonic instability suppression from $47.28\%$ to $25.83\%$ at $M=5$)
+   - 7.4 Orthogonal Cyclic Marginalization & Paired Hypothesis Tests ($16.11\%$ residual flip rate at $M=5$; sole FDR-significant gain at $K=40$, $+9.17$ pp, adjusted $p=0.04395$; $K=77$ non-significance under multiple testing control)
+   - 7.5 Probability Calibration and ECE Dynamics ($0.3700 \to 0.0960$ for Rand_Marg_M5 and $0.1619$ for B2_Cyclic_M5)
+   - 7.6 Query-Level Instability Heterogeneity and Pareto Frontier ($55.0\%$ queries with $\mathrm{FR} \ge 50\%$; correlation with margin $r=-0.4926$; non-dominated operating points)
+8. **Important Negative Replication Result:** Full accounting of the non-replication of the exploratory $65.0\%$ cyclic accuracy finding at $K=77$, which regressed to $48.06\%$ [39.7%, 55.6\%] under pre-specified multi-seed replication ($N=120, S=3$).
+9. **Discussion:** Architectural origins of positional sensitivity, the fallacy of relying on alphabetical canonicalization for determinism, and inference-time marginalization trade-offs.
+10. **Limitations:** Single backbone/checkpoint scope (`convaiinnovations/laya`), domain specificity (Banking77), post-training inference scope, and statistical power constraints at $K=77$ ($N=120$).
+11. **Conclusion:** Comprehensive synthesis of findings, algorithmic recommendations, and implications for non-autoregressive decision models.
+12. **Reproducibility and Artifact Availability:** Archival release metadata pointing to Zenodo DOI `10.5281/zenodo.22906245` and GitHub release `v1.0.0` (`266bbb902871dc9974cbf516adea013e3c4eb084`).
 
 ---
 
