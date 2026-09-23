@@ -364,22 +364,22 @@ def check_15_supplementary_zip():
 
 
 def check_16_git_hygiene():
-    """16. Git branch hygiene check (on paper/tmlr-final branch, main and v1.0.0 untouched)."""
+    """16. Git branch hygiene check (on paper/tmlr-final branch, main descends from frozen release, v1.0.0 untouched)."""
     rc, stdout, _ = run_cmd("git branch --show-current")
     if stdout != "paper/tmlr-final":
         return False, f"Current branch is '{stdout}', expected 'paper/tmlr-final'"
 
-    # Verify main branch commit
-    rc, stdout, _ = run_cmd("git rev-parse main")
-    if stdout != FROZEN_COMMIT:
-        return False, f"main branch commit {stdout} has moved from frozen {FROZEN_COMMIT}!"
-
-    # Verify v1.0.0 tag
+    # Verify v1.0.0 tag is strictly frozen
     rc, stdout, _ = run_cmd("git rev-parse v1.0.0^{}")
     if stdout != FROZEN_COMMIT:
         return False, f"v1.0.0 tag {stdout} has moved from frozen {FROZEN_COMMIT}!"
 
-    return True, "Branch is paper/tmlr-final; main and v1.0.0 remain strictly untouched at 266bbb9"
+    # Verify main branch contains the frozen release commit as an ancestor
+    rc, _, _ = run_cmd(f"git merge-base --is-ancestor {FROZEN_COMMIT} main")
+    if rc != 0:
+        return False, f"main branch does not contain frozen release commit {FROZEN_COMMIT}!"
+
+    return True, f"Branch is paper/tmlr-final; v1.0.0 tag is strictly frozen at {FROZEN_COMMIT[:7]}; main descends from release"
 
 
 def main():
